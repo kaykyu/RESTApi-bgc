@@ -1,0 +1,46 @@
+db.comment.aggregate([
+{
+    $group: {
+
+        _id: "$gid",
+        highest_rating: {$max: "$rating"},
+        reviews: {$push: 
+            {user: "$user", comment: "$c_text", rating: "$rating", cid: "$_id"}
+        }
+    }
+},
+{
+    $unwind: "$reviews"
+},
+{
+    $project: {
+        highest_rating: 1, 
+        rating: "$reviews.rating", 
+        user: "$reviews.user", 
+        comment: "$reviews.comment", 
+        cid: "$reviews.cid"} 
+},
+{
+    $match: {$expr: {$eq: ["$highest_rating", "$rating"]}}
+},
+{
+    $lookup: {
+        from: "game",
+        foreignField: "gid",
+        localField: "_id",
+        as: "game"
+    }
+},
+{
+    $project: {
+        rating: 1,
+        user: 1,
+        comment: 1,
+        cid: 1,
+        name: "$game.name"
+    }
+},
+{
+    $unwind: "$name"
+}
+]);
