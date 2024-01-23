@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -115,7 +114,7 @@ public class SearchService {
 
         if (doc.get("edited") != null) {
 
-            List<Document> edits = (List<Document>) doc.get("edited");
+            List<Document> edits = doc.getList("edited", Document.class);
             Document edit = edits.get(edits.size() - 1);
 
             JsonObject latest = Json.createReader(new StringReader(edit.toJson())).readObject();
@@ -137,7 +136,7 @@ public class SearchService {
                     .add("timestamp", DateTime.now().toString())
                     .build();
 
-        List<Document> edits = (List<Document>) doc.get("edited");
+        List<Document> edits = doc.getList("edited", Document.class);
         JsonArrayBuilder builder = Json.createArrayBuilder();
         for (Document d : edits) {
             builder.add(Json.createReader(new StringReader(d.toJson())).readObject());
@@ -163,7 +162,7 @@ public class SearchService {
             return JsonObject.EMPTY_JSON_OBJECT;
 
         Document doc = docs.get(0);
-        List<Document> reviews = (List<Document>) doc.get("reviews");
+        List<Document> reviews = doc.getList("reviews", Document.class);
         JsonArrayBuilder builder = Json.createArrayBuilder();
         for (Document review : reviews) {
             builder.add("/review/%s".formatted(review.getObjectId("_id").toString()));

@@ -123,10 +123,10 @@ public class CommentRepository {
         UnwindOperation unwindOps1 = Aggregation.unwind("$reviews");
 
         ProjectionOperation projectOps1 = Aggregation.project(var)
-                .and("$reviews.rating").as("rating")
-                .and("$reviews.user").as("user")
-                .and("$reviews.comment").as("comment")
-                .and("$reviews.cid").as("cid");
+                .and("reviews.rating").as("rating")
+                .and("reviews.user").as("user")
+                .and("reviews.comment").as("comment")
+                .and("reviews.cid").as("cid");
 
         MatchOperation matchOpsHigh = Aggregation.match(
                 AggregationExpression.from(MongoExpression.create("""
