@@ -190,7 +190,6 @@ public class SearchService {
 
             Integer id = doc.getInteger("_id");
             Game game = gameRepo.getGameDetails(id).get();
-            
 
             builder.add(Json.createObjectBuilder()
                     .add("_id", id)
@@ -199,18 +198,44 @@ public class SearchService {
                     .add("user", doc.getString("user"))
                     .add("comment", doc.getString("comment"))
                     .add("review_id", doc.getObjectId("cid").toHexString())
-                    .build());                    
+                    .build());
         }
 
         if (highest)
             var = "highest";
         else
             var = "lowest";
-        
+
         return Json.createObjectBuilder()
                 .add("rating", var)
                 .add("games", builder.build())
                 .add("timestamp", DateTime.now().toString())
                 .build();
+    }
+    
+    public JsonArray getGameByName(String name) {
+
+        List<Document> docs = gameRepo.getGameByName(name);
+        JsonArrayBuilder result = Json.createArrayBuilder();
+        for (Document game : docs) {
+            List<Document> reviews = game.getList("comments", Document.class);
+            JsonArrayBuilder builder = Json.createArrayBuilder();
+            for (Document review : reviews) {
+                builder.add(Json.createObjectBuilder()
+                        .add("user", review.getString("user"))
+                        .add("rating", review.getInteger("rating"))
+                        .add("c_text", review.getString("c_text"))
+                        .build());
+            }
+
+            result.add(Json.createObjectBuilder()
+                    .add("_id", game.getInteger("_id"))
+                    .add("name", game.getString("name"))
+                    .add("ranking", game.getInteger("ranking"))
+                    .add("comments", builder.build())
+                    .build());
+        }
+
+        return result.build();
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.LookupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
@@ -79,5 +80,16 @@ public class GameRepository {
 
         Aggregation pipeline = Aggregation.newAggregation(lookupOps, matchOps);
         return template.aggregate(pipeline, "game", Document.class).getMappedResults();
+    }
+
+    public List<Document> getGameByName(String name) {
+
+        MatchOperation matchOps = Aggregation.match(Criteria.where("name").regex(name, "i"));
+        ProjectionOperation projectOps = Aggregation.project("name", "ranking").and("gid").as("_id");
+        LookupOperation lookupOps = Aggregation.lookup("comment", "_id", "gid", "comments");
+
+        Aggregation pipeline = Aggregation.newAggregation(matchOps, projectOps, lookupOps);
+        return template.aggregate(pipeline, "game", Document.class).getMappedResults();
+
     }
 }
